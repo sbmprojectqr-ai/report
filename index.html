@@ -1,91 +1,146 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Garbage Report</title>
-  <style>
-    body{
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-      max-width:720px;
-      margin:18px auto;
-      padding:12px;
-      background:#f6f9ff;
-    }
-    .card{
-      border-radius:12px;
-      padding:16px;
-      box-shadow:0 6px 20px rgba(0,0,0,0.08);
-      background:white;
-    }
-    img.preview{
-      max-width:100%;
-      border-radius:10px;
-      margin-top:8px;
-    }
-    button{
-      display:inline-block;
-      padding:12px 14px;
-      border-radius:10px;
-      border:0;
-      background:#0b74ff;
-      color:white;
-      font-weight:600;
-      margin-top:8px;
-      width:100%;
-      font-size:16px;
-    }
-    input[type="file"]{
-      display:none;
-    }
-    textarea{
-      width:100%;
-      min-height:96px;
-      border-radius:10px;
-      padding:10px;
-      margin-top:8px;
-      border:1px solid #ddd;
-      resize:vertical;
-      font-size:15px;
-    }
-    .muted{
-      color:#666;
-      font-size:0.9rem;
-    }
-    .small{
-      font-size:13px;
-      color:#666;
-      margin-top:6px;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Garbage Report</title>
+
+<style>
+  body{
+    font-family: system-ui, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #e8f5e9; /* light green background */
+  }
+
+  .header{
+    text-align: center;
+    padding: 20px;
+    background: #4caf50;
+    color: white;
+    font-size: 22px;
+    font-weight: 700;
+  }
+
+  .trees{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: -20px;
+  }
+
+  .trees img{
+    width: 120px;
+  }
+
+  .container{
+    background: white;
+    margin: 20px auto;
+    padding: 18px;
+    max-width: 720px;
+    border-radius: 14px;
+    box-shadow: 0px 6px 14px rgba(0,0,0,0.15);
+  }
+
+  .btn{
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-size: 17px;
+    font-weight: 600;
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .camera-btn{
+    background: #0b74ff;
+  }
+
+  .report-btn{
+    background: #1b8f31;
+  }
+
+  .icon{
+    width: 22px;
+    height: 22px;
+  }
+
+  textarea{
+    width: 100%;
+    min-height: 110px;
+    padding: 12px;
+    margin-top: 20px;
+    border-radius: 12px;
+    border: 1px solid #ccc;
+    font-size: 15px;
+    resize: vertical;
+  }
+
+  #preview{
+    width: 100%;
+    margin-top: 15px;
+    border-radius: 12px;
+    display: none;
+  }
+
+  #locText{
+    margin-top: 12px;
+    color: #444;
+    font-size: 14px;
+  }
+
+  input[type="file"]{
+    display: none;
+  }
+</style>
+
 </head>
+
 <body>
-  <div class="card">
-    <h2 style="margin:0 0 6px 0">Garbage Report</h2>
-    <p class="muted">Capture photo → Allow location → Add more details → Send Report</p>
 
-    <!-- hidden file input to open camera -->
-    <input id="fileInput" type="file" accept="image/*" capture="environment">
+<div class="header">Garbage Reporting System</div>
 
-    <button id="captureBtn">Capture Photo</button>
-    <img id="preview" class="preview" alt="" style="display:none" />
+<div class="trees">
+  <img src="https://i.imgur.com/rStN4Cy.png">
+  <img src="https://i.imgur.com/rStN4Cy.png">
+  <img src="https://i.imgur.com/rStN4Cy.png">
+</div>
 
-    <label style="margin-top:10px;display:block"><strong>Add details</strong></label>
-    <textarea id="details" placeholder="Describe what you see..."></textarea>
+<div class="container">
 
-    <div class="small" id="locText">Location: not captured yet</div>
+  <!-- hidden camera trigger -->
+  <input id="fileInput" type="file" accept="image/*" capture="environment">
 
-    <div style="margin-top:10px;">
-      <button id="sendBtn" style="background:#16a34a">Send Report</button>
-    </div>
+  <button id="captureBtn" class="btn camera-btn">
+    <svg class="icon" viewBox="0 0 24 24" fill="white">
+      <path d="M12 17a4 4 0 100-8 4 4 0 000 8zm6-10h-2.586l-1.707-1.707A1 1 0 0013.586 5h-3.172a1 1 0 00-.707.293L8 7H6a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2V9a2 2 0 00-2-2z"/>
+    </svg>
+    Capture Photo
+  </button>
 
-    <p class="muted small" style="margin-top:10px">
-      Note: Photos are converted to base64 and sent through EmailJS.
-    </p>
-  </div>
+  <img id="preview" />
 
-  <!-- EmailJS SDK -->
-  <script src="https://cdn.emailjs.com/sdk/3.2.0/email.min.js"></script>
-  <script src="app.js"></script>
+  <textarea id="details" placeholder="Explain what you see... (Example: Overflowing garbage near shop no. 12)"></textarea>
+
+  <div id="locText">Location: not captured yet</div>
+
+  <button id="sendBtn" class="btn report-btn">
+    <svg class="icon" viewBox="0 0 24 24" fill="white">
+      <path d="M21 6.5l-13.2 3.8L9.6 12l-1.8 1.7 13.2 3.8L21 6.5zm-15 5.3l-4-2.3v5l4-2.7z"/>
+    </svg>
+    Send Report
+  </button>
+
+</div>
+
+<!-- EmailJS -->
+<script src="https://cdn.emailjs.com/sdk/3.2.0/email.min.js"></script>
+<script src="app.js"></script>
+
 </body>
 </html>
