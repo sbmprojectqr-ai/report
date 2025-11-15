@@ -1,104 +1,71 @@
-// ====== CONFIG: REPLACE THESE VALUES with your EmailJS info ======
-const EMAILJS_SERVICE_ID = "sbmprojectqr@gmail.com";    
-const EMAILJS_TEMPLATE_ID = "template_qsgyy3e"; 
-const EMAILJS_PUBLIC_KEY = "MJzgZh1FY-5o66gnS";   
-// =================================================================
+emailjs.init("MJzgZh1FY-5o66gnS");
 
-emailjs.init(EMAILJS_PUBLIC_KEY);
-
-let imageBase64 = null;
-let locationData = null;
-
-const fileInput = document.getElementById("fileInput");
-const captureBtn = document.getElementById("captureBtn");
+const video = document.getElementById("camera");
 const preview = document.getElementById("preview");
+const captureBtn = document.getElementById("captureBtn");
 const sendBtn = document.getElementById("sendBtn");
-const locText = document.getElementById("locText");
-const details = document.getElementById("details");
 
-// CAMERA BUTTON → OPEN CAMERA
+let canvas = document.createElement("canvas");
+let imageBase64 = "";
+let userLocation = "";
+
+async function startCamera() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "environment" }
+        });
+        video.srcObject = stream;
+    } catch (e) {
+        alert("Camera permission denied. Please allow camera access.");
+    }
+}
+
+// Capture Photo
 captureBtn.addEventListener("click", () => {
-  fileInput.click();
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d").drawImage(video, 0, 0);
+    imageBase64 = canvas.toDataURL("image/png");
+    preview.src = imageBase64;
+    preview.style.display = "block";
 });
 
-// WHEN USER TAKES PHOTO
-fileInput.addEventListener("change", (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  preview.src = URL.createObjectURL(file);
-  preview.style.display = "block";
-
-  convertToBase64(file).then(b64 => {
-    imageBase64 = b64;
-  });
-
-  getLocation();
-});
-
-// FILE → BASE64
-function convertToBase64(file){
-  return new Promise(res => {
-    const reader = new FileReader();
-    reader.onload = () => res(reader.result);
-    reader.readAsDataURL(file);
-  });
+// Get location
+function getLocation() {
+    return new Promise((resolve) => {
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                resolve(`https://maps.google.com/?q=${pos.coords.latitude},${pos.coords.longitude}`);
+            },
+            () => resolve("Location not shared"),
+            { enableHighAccuracy: true }
+        );
+    });
 }
 
-// LOCATION
-function getLocation(){
-  if (!navigator.geolocation){
-    locText.textContent = "Location not supported";
-    return;
-  }
+// Send Email
+sendBtn.addEventListener("click", async () => {
+    if (!imageBase64) {
+        alert("Please capture a photo first!");
+        return;
+    }
 
-  locText.textContent = "Fetching location...";
+    userLocation = await getLocation();
 
-  navigator.geolocation.getCurrentPosition(
-    pos => {
-      locationData = pos.coords;
-      locText.textContent =
-        `Location: ${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)} (±${Math.round(pos.coords.accuracy)}m)`;
-    },
-    err => {
-      locText.textContent = "Location denied";
-      locationData = null;
-    },
-    { enableHighAccuracy: true }
-  );
-}
+    const details = document.getElementById("details").value;
 
-// SEND EMAIL
-sendBtn.addEventListener("click", () => {
-  if (!imageBase64){
-    alert("Please capture a photo first.");
-    return;
-  }
-
-  sendBtn.disabled = true;
-  sendBtn.textContent = "Sending...";
-
-  let mapLink = locationData
-    ? `https://maps.google.com/?q=${locationData.latitude},${locationData.longitude}`
-    : "Location not available";
-
-  const params = {
-    details: details.value || "(no details)",
-    image: imageBase64,
-    location: mapLink
-  };
-
-  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params)
-  .then(() => {
-    alert("Report sent successfully!");
-    sendBtn.textContent = "Send Report";
-    sendBtn.disabled = false;
-    preview.style.display = "none";
-    details.value = "";
-  })
-  .catch(() => {
-    alert("Failed to send. Try again.");
-    sendBtn.textContent = "Send Report";
-    sendBtn.disabled = false;
-  });
+    emailjs.send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", {
+        details: details,
+        image: imageBase64,
+        location: userLocation
+    })
+    .then(() => {
+        alert("Report sent successfully!");
+    })
+    .catch(err => {
+        alert("Failed to send report.");
+        console.error(err);
+    });
 });
+
+startCamera();
