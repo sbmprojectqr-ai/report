@@ -1,9 +1,8 @@
-# Garbage Report App
+# Garbage Report System
 
-Mobile-friendly web interface to:
-- Capture photo (opens camera directly)
-- Auto-fetch GPS location
-- Add details
-- Send everything to EmailJS
-
-Works perfectly with QR codes and Vercel hosting.
+A mobile-friendly web app that:
+- Captures photo using camera
+- Gets user GPS location
+- Allows user to add details
+- Sends everything via EmailJS
+- Clean green UI with icons and trees
